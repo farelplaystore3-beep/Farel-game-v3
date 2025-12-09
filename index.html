@@ -1,0 +1,612 @@
+
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>FAREL GAME V3 — Zeus & Mahjong & Crash & Dadu (Sim)</title>
+<meta name="description" content="FAREL GAME V3 - Prank / Simulasi" />
+<style>
+/* ---------- Theme variables ---------- */
+/* Zeus (primary) = biru gelap / emas */
+:root{
+  --bg:#071028;
+  --panel:#0b1630;
+  --card:#0d1b33;
+  --muted:#98a6c0;
+  --accent:#3ea6ff;      /* bluish */
+  --accent-2:#ffcc4d;    /* gold */
+  --success:#38d98a;
+  --danger:#ff6b6b;
+  --glass: rgba(255,255,255,0.03);
+  --neon: rgba(62,166,255,0.14);
+  --mahjong-green:#0a3c2a;
+  --mahjong-gold:#e6c67a;
+  --hud-blue:#0f2135;
+}
+/* ---------- Base ---------- */
+*{box-sizing:border-box;font-family:Inter,system-ui,Arial,Helvetica,sans-serif}
+body{margin:0;background:linear-gradient(180deg,var(--bg),#021226);color:var(--accent-2);min-height:100vh;display:flex;flex-direction:column}
+.header{display:flex;align-items:center;gap:12px;padding:14px 16px;background:linear-gradient(90deg,#021c36,#052a4b);border-bottom:1px solid rgba(255,255,255,0.03)}
+.brand{font-weight:900;font-size:18px;color:var(--accent-2);letter-spacing:0.6px}
+.subtitle{color:var(--muted);font-size:12px}
+.top-right{margin-left:auto;display:flex;gap:10px;align-items:center}
+.balance{background:#fff2cc;color:#07202b;padding:6px 10px;border-radius:10px;font-weight:800}
+.tabs{display:flex;gap:8px;padding:10px;background:transparent;overflow:auto;border-bottom:1px solid rgba(255,255,255,0.02)}
+.tabs button{background:transparent;border:1px solid rgba(255,255,255,0.03);color:var(--accent-2);padding:8px 12px;border-radius:10px;cursor:pointer}
+.tabs button.active{background:linear-gradient(90deg,var(--accent),#1f9dff);color:#021226;border-color:transparent;box-shadow:0 6px 24px rgba(31,157,255,0.08);transform:translateY(-1px)}
+.container{display:grid;grid-template-columns:1fr 360px;gap:18px;padding:18px;align-items:start}
+.left{min-height:400px}
+.card{background:linear-gradient(180deg,var(--card),#071627);border-radius:12px;padding:14px;border:1px solid var(--glass);box-shadow:0 10px 30px rgba(2,6,23,0.6)}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.small{font-size:13px;color:var(--muted)}
+.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.input{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--accent-2);min-width:120px}
+.btn{background:linear-gradient(90deg,var(--accent),#197cf6);border:none;color:white;padding:8px 12px;border-radius:10px;cursor:pointer;box-shadow:0 6px 18px rgba(31,157,255,0.08)}
+.btn.alt{background:#ffb84d;color:#07202b}
+.msg{margin-top:10px;color:#cce6ff}
+
+/* ---------- Zeus Slot ---------- */
+.zeus-board{display:grid;grid-template-columns:repeat(5,72px);grid-auto-rows:72px;gap:8px;justify-content:center;padding:12px;background:linear-gradient(180deg,#071a33,#041126);border-radius:10px;border:1px solid rgba(255,255,255,0.02)}
+.reel-cell{width:72px;height:72px;border-radius:8px;background:linear-gradient(180deg,#061426,#082243);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:var(--accent-2);border:1px solid rgba(255,255,255,0.02);box-shadow:inset 0 -8px 30px rgba(0,0,0,0.5)}
+.symbol{font-size:22px;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.6))}
+
+/* golden highlight for SCATTER */
+.scatter{color:var(--accent-2);text-shadow:0 6px 18px rgba(255,204,77,0.25);transform:scale(1.04)}
+
+/* ---------- Mahjong ---------- */
+.mahjong-area{background:linear-gradient(180deg,#062b20,#04221b);border-radius:10px;padding:12px;border:1px solid rgba(255,255,255,0.02)}
+.mahjong-tile{display:inline-flex;align-items:center;justify-content:center;width:64px;height:88px;margin:6px;border-radius:8px;background:linear-gradient(180deg,#0b3d2d,#063022);color:var(--mahjong-gold);font-weight:800;font-size:18px;border:1px solid rgba(255,255,255,0.03)}
+
+/* ---------- Crash HUD (futuristic) ---------- */
+.crash-hud{background:linear-gradient(180deg,#001526,#02233a);padding:12px;border-radius:10px;border:1px solid rgba(62,166,255,0.08);box-shadow:0 10px 30px rgba(2,6,23,0.6)}
+.crash-meter{height:10px;background:rgba(255,255,255,0.03);border-radius:6px;overflow:hidden}
+.crash-fill{height:100%;width:10%;background:linear-gradient(90deg,#28f0ff,#3ea6ff);transition:width .12s;box-shadow:0 6px 18px rgba(62,166,255,0.12)}
+.hud-row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+
+/* ---------- Dice in can ---------- */
+.can{width:120px;height:120px;border-radius:12px;background:linear-gradient(180deg,#071224,#03122a);display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.03);margin-right:12px}
+.die{width:44px;height:44px;border-radius:8px;background:#fff;color:#071226;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;box-shadow:0 6px 18px rgba(0,0,0,0.6)}
+
+/* ---------- Sidebar / admin ---------- */
+.sidebar .card{margin-bottom:12px}
+.field{display:flex;flex-direction:column;gap:6px}
+.admin-area{display:none}
+.note{font-size:12px;color:var(--muted);margin-top:8px}
+
+/* ---------- Responsive ---------- */
+@media (max-width:980px){
+  .container{grid-template-columns:1fr}
+  .top-right{display:none}
+  .tabs{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div>
+    <div class="brand">⚡ FAREL GAME V3</div>
+    <div class="subtitle">Prank / Simulasi — bukan layanan nyata</div>
+  </div>
+  <div class="top-right">
+    <div class="small">ID: <strong id="userId">FAREL</strong></div>
+    <div class="balance" id="uiBalance">Rp 50.000</div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button data-view="home" class="active">Home</button>
+  <button data-view="zeus">Zeus (Slot)</button>
+  <button data-view="mahjong">Mahjong Ways 1</button>
+  <button data-view="crash">Pesawat (Crash)</button>
+  <button data-view="dadu">Dadu (Kaleng)</button>
+  <button data-view="admin">Admin</button>
+</nav>
+
+<div class="container">
+  <div class="left">
+    <!-- HOME -->
+    <div id="view-home" class="card view active">
+      <div class="section-title"><div><strong>Lobby</strong></div><div class="small">Pilih game untuk main</div></div>
+      <div class="controls" style="margin-bottom:12px">
+        <button class="btn" onclick="showView('zeus')">Main Zeus</button>
+        <button class="btn" onclick="showView('mahjong')">Main Mahjong</button>
+        <button class="btn" onclick="showView('crash')">Main Crash</button>
+        <button class="btn" onclick="showView('dadu')">Main Dadu</button>
+      </div>
+      <div class="card" style="margin-top:12px;">
+        <div class="small">Status saldo & informasi</div>
+        <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap">
+          <div class="field"><div class="small">Saldo (Rp)</div><div id="balRp" style="font-weight:900;font-size:18px">50.000</div></div>
+          <div class="field"><div class="small">Kacang (token)</div><div id="balPeanut" style="font-weight:900;font-size:18px">0</div></div>
+        </div>
+        <div class="note">Admin: <strong>FAREL</strong> / PW: <strong>55555</strong></div>
+      </div>
+    </div>
+
+    <!-- ZEUS -->
+    <div id="view-zeus" class="card view hidden" style="margin-top:14px">
+      <div class="section-title"><div><strong>Zeus ⚡ (Slot)</strong></div><div class="small">Tema biru gelap — Free spin saat 4+ SCATTER</div></div>
+
+      <div class="zeus-board" id="zeusBoard"></div>
+
+      <div style="display:flex;justify-content:center;align-items:center;gap:12px;margin-top:12px">
+        <div style="display:flex;flex-direction:column;align-items:center">
+          <div class="small">Bet (kacang)</div>
+          <input id="zeusBet" class="input" type="number" value="400" min="400">
+        </div>
+        <button class="btn" id="zeusSpinBtn">SPIN</button>
+        <button class="btn alt" id="zeusBuyBtn">BUY SCATTER</button>
+      </div>
+
+      <div id="zeusMsg" class="msg"></div>
+    </div>
+
+    <!-- MAHJONG -->
+    <div id="view-mahjong" class="card view hidden" style="margin-top:14px">
+      <div class="section-title"><div><strong>Mahjong Ways 1</strong></div><div class="small">Tema jade — simulasi mirip asli</div></div>
+
+      <div class="mahjong-area" id="mahjongArea">
+        <div id="mahjongTiles" style="display:flex;flex-wrap:wrap;justify-content:center"></div>
+      </div>
+
+      <div style="display:flex;gap:12px;align-items:center;margin-top:12px">
+        <div><div class="small">Bet (kacang)</div><input id="mahjongBet" class="input" type="number" value="400" min="400"></div>
+        <button class="btn" id="mahjongSpinBtn">PUTAR</button>
+      </div>
+
+      <div id="mahjongMsg" class="msg"></div>
+    </div>
+
+    <!-- CRASH -->
+    <div id="view-crash" class="card view hidden" style="margin-top:14px">
+      <div class="section-title"><div><strong>Pesawat — Crash</strong></div><div class="small">HUD futuristik • Cash out sebelum meledak</div></div>
+
+      <div class="crash-hud">
+        <div class="hud-row"><div class="small">Multiplier</div><div id="crashMult" style="font-weight:900">x1.00</div></div>
+        <div class="crash-meter" style="margin-top:8px"><div id="crashFill" class="crash-fill" style="width:4%"></div></div>
+        <div class="small" style="margin-top:8px" id="crashStatus">Siap</div>
+      </div>
+
+      <div style="display:flex;gap:12px;align-items:center;margin-top:12px">
+        <div><div class="small">Bet (kacang)</div><input id="crashBet" class="input" type="number" value="400" min="400"></div>
+        <button class="btn" id="crashStartBtn">START</button>
+        <button class="btn" id="crashCashoutBtn" disabled>Cashout</button>
+      </div>
+
+      <div id="crashMsg" class="msg"></div>
+    </div>
+
+    <!-- Dadu -->
+    <div id="view-dadu" class="card view hidden" style="margin-top:14px">
+      <div class="section-title"><div><strong>Dadu — Kaleng (3 dadu)</strong></div><div class="small">Tebak 3 angka. 1 cocok → ×2, semua cocok → ×100</div></div>
+
+      <div style="display:flex;align-items:center">
+        <div class="can" id="canArea"><div id="canDisplay" class="die">-</div></div>
+
+        <div style="flex:1">
+          <div style="display:flex;gap:8px;align-items:center">
+            <div><div class="small">Bet (kacang)</div><input id="diceBet" class="input" type="number" value="400" min="400"></div>
+            <div style="flex:1">
+              <div class="small">Tebakan (3 angka, pisah koma — contoh: 2,5,1)</div>
+              <input id="diceGuess" class="input" placeholder="Contoh: 2,5,1">
+            </div>
+            <button class="btn" id="diceRollBtn">KOCOK</button>
+          </div>
+
+          <div id="diceMsg" class="msg"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="view-admin" class="card view hidden" style="margin-top:14px">
+      <div class="section-title"><div><strong>Admin</strong></div><div class="small">Masuk dengan akun admin untuk atur RTP / saldo</div></div>
+
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="adminUser" class="input" placeholder="User">
+        <input id="adminPass" class="input" placeholder="Pass" type="password">
+        <button class="btn" id="adminLoginBtn">Login</button>
+      </div>
+
+      <div class="admin-area card" id="adminArea" style="margin-top:12px">
+        <div class="field"><label class="small">Saldo awal (Rp)</label><input id="cfgBalance" class="input" type="number"></div>
+        <div class="field"><label class="small">Min bet (kacang)</label><input id="cfgMinBet" class="input" type="number"></div>
+        <div class="field"><label class="small">RTP target (%)</label><input id="cfgRTP" class="input" type="number"></div>
+        <div class="field"><label class="small">Zeus free spins (scatter)</label><input id="cfgZeusFS" class="input" type="number"></div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn" id="saveCfgBtn">Simpan</button>
+          <button class="btn alt" id="resetBtn">Reset Data</button>
+        </div>
+      </div>
+      <div class="note">Akun admin default: <strong>FAREL</strong> / <strong>55555</strong></div>
+    </div>
+
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="card">
+      <div class="small">Quick actions</div>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <button class="btn" onclick="addPeanut(100)">+100 🫘</button>
+        <button class="btn" onclick="addPeanut(500)">+500 🫘</button>
+        <button class="btn alt" onclick="exchangeToPeanut()">Tukar 1000 Rp → 100 🫘</button>
+      </div>
+      <div class="note">Simulasi saja — semua transaksi di local.</div>
+    </div>
+
+    <div class="card">
+      <div class="small">Riwayat singkat</div>
+      <div id="miniHistory" style="margin-top:8px;color:var(--muted);font-size:13px">Belum ada aktivitas.</div>
+    </div>
+
+    <div class="card">
+      <div class="small">Info</div>
+      <div style="margin-top:8px" class="note">Jika mau ubah kemenangan manual, gunakan area Admin (FAREL / 55555) untuk set RTP / minbet / free spins.</div>
+    </div>
+  </aside>
+</div>
+
+<script>
+/* ---------- State & defaults ---------- */
+const STORAGE_KEY = 'farel_game_v3';
+const DEFAULT = {
+  rp: 50000,
+  peanut: 0,
+  cfg: { minbet: 400, rtp: 85, zeusFreeSpins: 15 },
+  history: []
+};
+let S = load();
+
+/* ---------- Utilities ---------- */
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(S)); renderBalances(); renderHistory(); }
+function load(){ try{ const x = JSON.parse(localStorage.getItem(STORAGE_KEY)); return x || JSON.parse(JSON.stringify(DEFAULT)); }catch(e){ return JSON.parse(JSON.stringify(DEFAULT)); } }
+function renderBalances(){ document.getElementById('uiBalance').innerText = 'Rp ' + (S.rp||0).toLocaleString(); document.getElementById('balRp').innerText = (S.rp||0).toLocaleString(); document.getElementById('balPeanut').innerText = (S.peanut||0).toLocaleString(); }
+function pushHist(title,detail){ S.history = S.history || []; S.history.unshift({t: new Date().toLocaleString(), title, detail}); if(S.history.length>25) S.history.pop(); save(); }
+function renderHistory(){ const el = document.getElementById('miniHistory'); if(!S.history || S.history.length===0){ el.innerText='Belum ada aktivitas.'; return;} el.innerHTML = S.history.slice(0,5).map(h => `<div style="margin-bottom:6px"><strong>${h.title}</strong><div style="font-size:12px;color:var(--muted)">${h.t} — ${h.detail}</div></div>`).join(''); }
+
+/* ---------- Init UI & nav ---------- */
+function qs(sel){return document.querySelector(sel)}
+function qsa(sel){return Array.from(document.querySelectorAll(sel))}
+qsa('.tabs button').forEach(b=>b.addEventListener('click',()=>{ qsa('.tabs button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); showView(b.dataset.view); }));
+function showView(v){ qsa('.view').forEach(x=>x.classList.add('hidden')); const el = document.getElementById('view-'+v); if(el){ el.classList.remove('hidden'); } }
+renderBalances(); renderHistory();
+
+/* ---------- Zeus implementation ---------- */
+const zeusSymbols = ['A','B','C','⚡','Z','7']; // simpler set
+function renderZeusEmpty(){
+  const board = document.getElementById('zeusBoard');
+  board.innerHTML = '';
+  for(let i=0;i<15;i++){
+    const div = document.createElement('div'); div.className='reel-cell'; div.innerHTML='-'; board.appendChild(div);
+  }
+}
+renderZeusEmpty();
+
+// spin logic: 5x3 grid (15 cells)
+function zeusSpin(){
+  const bet = parseInt(document.getElementById('zeusBet').value || 0,10);
+  if(bet < S.cfg.minbet){ setMsg('zeusMsg','Minimal bet '+S.cfg.minbet); return; }
+  if(S.peanut < bet){ setMsg('zeusMsg','Kacang tidak cukup (tambah dari sidebar)'); return; }
+  // consume
+  S.peanut -= bet; pushHist('Zeus Bet','Bet '+bet+' 🫘'); save();
+
+  // build matrix
+  const matrix = [];
+  let scatterCount = 0;
+  for(let c=0;c<5;c++){
+    const col = [];
+    for(let r=0;r<3;r++){
+      // weighted symbol: scatter rare
+      const rnd = Math.random();
+      let sym;
+      if(rnd < 0.06) sym = '⚡';
+      else if(rnd < 0.2) sym = 'Z';
+      else if(rnd < 0.45) sym = 'A';
+      else if(rnd < 0.7) sym = 'B';
+      else if(rnd < 0.9) sym = 'C';
+      else sym = '7';
+      col.push(sym);
+      if(sym==='⚡') scatterCount++;
+    }
+    matrix.push(col);
+  }
+
+  // display
+  const cells = document.querySelectorAll('#zeusBoard .reel-cell');
+  cells.forEach((c,i)=>{
+    const col = Math.floor(i/3), row = i%3;
+    const val = matrix[col][row];
+    c.innerHTML = `<span class="symbol ${val==='⚡'?'scatter':''}">${val}</span>`;
+  });
+
+  // determine win (simple): match triples in a column -> big; two adjacent -> medium; else maybe none
+  let win = 0;
+  for(let c=0;c<5;c++){
+    if(matrix[c][0] === matrix[c][1] && matrix[c][1] === matrix[c][2]){
+      // triple
+      if(matrix[c][0] === '⚡') win += bet * 150; // big for scatter triple
+      else if(matrix[c][0] === 'Z') win += bet * 50;
+      else win += bet * 10;
+    } else if(matrix[c][0] === matrix[c][1] || matrix[c][1] === matrix[c][2] || matrix[c][0] === matrix[c][2]){
+      win += bet * 2;
+    }
+  }
+
+  // RTP bias: random reduce wins to approach configured RTP
+  if(Math.random()*100 > (S.cfg.rtp||85)){
+    // force lose
+    win = 0;
+  }
+
+  // scatter -> free spins if scatters >=4
+  if(scatterCount >= 4){
+    // award free spins
+    const fs = S.cfg.zeusFreeSpins || 15;
+    // display special modal-style message (simple)
+    setMsg('zeusMsg', `⚡ SCATTER ${scatterCount}! Zeus Bonus aktif: ${fs} free spins (x15)`);
+    // grant immediate simulated free spins awarding multiplier x15
+    let bonusWin = 0;
+    for(let i=0;i<fs;i++){
+      // small random wins during free spins
+      if(Math.random() < 0.25) bonusWin += Math.floor(bet * (1 + Math.random()*5)) * 15; // multiplied
+    }
+    win += bonusWin;
+    pushHist('Zeus Bonus','Scatter '+scatterCount+' → free spins win '+bonusWin+' 🫘');
+  }
+
+  if(win>0){
+    S.peanut += Math.floor(win);
+    pushHist('Zeus Menang','Menang +'+Math.floor(win)+' 🫘');
+    setMsg('zeusMsg','🎉 Menang +'+Math.floor(win)+' 🫘');
+  } else {
+    setMsg('zeusMsg','☹️ Tidak menang kali ini. Scatter: '+scatterCount);
+  }
+  save();
+}
+
+/* Buy scatter: cost = bet * 100 (in kacang) — guarantee scatter >=4 */
+function zeusBuyScatter(){
+  const bet = parseInt(document.getElementById('zeusBet').value||0,10);
+  if(bet < S.cfg.minbet){ setMsg('zeusMsg','Minimal bet '+S.cfg.minbet); return; }
+  const cost = bet * 100;
+  if(S.peanut < cost){ setMsg('zeusMsg','Kacang tidak cukup untuk buy scatter ('+cost+')'); return; }
+  if(!confirm('Buy Scatter akan mengurangi '+cost+' 🫘 dan memicu Zeus Bonus. Lanjutkan?')) return;
+  S.peanut -= cost; pushHist('BuyScatter','Cost '+cost+' 🫘'); save();
+
+  // show board with >=4 scatters (inject)
+  const cells = document.querySelectorAll('#zeusBoard .reel-cell');
+  // fill random then pick 4 random positions to set scatter
+  for(let i=0;i<cells.length;i++){
+    const sym = zeusSymbols[Math.floor(Math.random()*zeusSymbols.length)];
+    cells[i].innerHTML = `<span class="symbol">${sym}</span>`;
+  }
+  let idxs = [];
+  while(idxs.length < 4){
+    const r = Math.floor(Math.random()*cells.length);
+    if(!idxs.includes(r)) idxs.push(r);
+  }
+  idxs.forEach(i=>{
+    cells[i].innerHTML = `<span class="symbol scatter">⚡</span>`;
+  });
+
+  // immediate bonus simulation
+  let bonusWin = 0;
+  for(let i=0;i<(S.cfg.zeusFreeSpins||15);i++){
+    if(Math.random() < 0.3) bonusWin += Math.floor(bet*(1+Math.random()*4)) * 15;
+  }
+  S.peanut += bonusWin;
+  pushHist('BuyScatterWin','FreeSpin hasil +'+bonusWin+' 🫘');
+  setMsg('zeusMsg','⚡ Zeus Bonus (Buy) selesai: +'+bonusWin+' 🫘');
+  save();
+}
+
+/* ---------- Mahjong (mock real-like) ---------- */
+const mahjongSymbols = ['龍','西','中','發','東','南','北','一','二','三','四','五','六']; // illustrative
+function renderMahjongTiles(){
+  const area = document.getElementById('mahjongTiles'); area.innerHTML='';
+  for(let i=0;i<20;i++){
+    const idx = Math.floor(Math.random()*mahjongSymbols.length);
+    const el = document.createElement('div'); el.className='mahjong-tile'; el.innerText = mahjongSymbols[idx];
+    area.appendChild(el);
+  }
+}
+renderMahjongTiles();
+
+function mahjongSpin(){
+  const bet = parseInt(document.getElementById('mahjongBet').value||0,10);
+  if(bet < S.cfg.minbet){ setMsg('mahjongMsg','Min bet '+S.cfg.minbet); return; }
+  if(S.peanut < bet){ setMsg('mahjongMsg','Kacang tidak cukup'); return; }
+  S.peanut -= bet; pushHist('Mahjong Bet','Bet '+bet+' 🫘'); save();
+
+  // Simulate complex paytable: extremely simplified for demo
+  const chance = Math.random();
+  let win = 0;
+  if(chance > 0.995) win = bet * 1000;
+  else if(chance > 0.94) win = bet * 8;
+  else if(chance > 0.8) win = bet * 2;
+  // RTP adjustment
+  if(Math.random()*100 > (S.cfg.rtp || 85)) win = 0;
+  if(win>0){ S.peanut += win; pushHist('Mahjong Menang','+'+win+' 🫘'); setMsg('mahjongMsg','🎉 Menang +'+win+' 🫘'); }
+  else { setMsg('mahjongMsg','Kalah. Coba lagi.'); }
+  // animate tiles
+  renderMahjongTiles();
+  save();
+}
+
+/* ---------- Crash logic (futuristic HUD) ---------- */
+let crashState = {running:false,bet:0,mult:1,crashAt:0,interval:null};
+function startCrash(){
+  if(crashState.running) return;
+  const bet = parseInt(document.getElementById('crashBet').value||0,10);
+  if(bet < S.cfg.minbet){ setMsg('crashMsg','Min bet '+S.cfg.minbet); return; }
+  if(S.peanut < bet){ setMsg('crashMsg','Kacang tidak cukup'); return; }
+  S.peanut -= bet; pushHist('Crash Bet','Bet '+bet+' 🫘'); save();
+  crashState.running = true; crashState.bet = bet; crashState.mult = 1;
+  crashState.crashAt = 1 + Math.random()*9; // 1..10
+  document.getElementById('crashCashoutBtn').disabled = false;
+  document.getElementById('crashStatus').innerText = 'Pesawat lepas landas...';
+  document.getElementById('crashFill').style.width = '4%';
+  document.getElementById('crashMult').innerText = 'x1.00';
+
+  crashState.interval = setInterval(()=>{
+    crashState.mult += 0.04 + Math.random()*0.03;
+    const pct = Math.min(100, Math.floor((crashState.mult / crashState.crashAt) * 100));
+    document.getElementById('crashFill').style.width = (Math.min(100, pct)) + '%';
+    document.getElementById('crashMult').innerText = 'x' + crashState.mult.toFixed(2);
+    // crash when over threshold
+    if(crashState.mult >= crashState.crashAt){
+      clearInterval(crashState.interval);
+      crashState.running = false;
+      document.getElementById('crashCashoutBtn').disabled = true;
+      document.getElementById('crashStatus').innerText = '💥 Pesawat meledak! Kalah';
+      pushHist('Crash Kalah','Bet '+crashState.bet+' 🫘 → CRASH');
+      save();
+    }
+  },120);
+}
+function crashCashout(){
+  if(!crashState.running) return;
+  const gain = Math.floor(crashState.bet * crashState.mult);
+  S.peanut += gain;
+  pushHist('Crash Cashout','Cashout x'+crashState.mult.toFixed(2)+' → +'+gain+' 🫘');
+  clearInterval(crashState.interval);
+  crashState.running = false;
+  document.getElementById('crashCashoutBtn').disabled = true;
+  document.getElementById('crashStatus').innerText = '✅ Cashout berhasil: +'+gain+' 🫘';
+  save();
+}
+
+/* ---------- DICE in can (3 dice) ---------- */
+function rollThreeDice(){
+  const bet = parseInt(document.getElementById('diceBet').value||0,10);
+  const guessRaw = document.getElementById('diceGuess').value.trim();
+  if(bet < S.cfg.minbet){ setMsg('diceMsg','Min bet '+S.cfg.minbet); return; }
+  if(S.peanut < bet){ setMsg('diceMsg','Kacang tidak cukup'); return; }
+  const parts = guessRaw.split(',').map(s=>parseInt(s.trim(),10)).filter(x=>!isNaN(x) && x>=1 && x<=6);
+  if(parts.length !== 3){ setMsg('diceMsg','Masukkan 3 angka (1-6) dipisah koma'); return; }
+  // consume
+  S.peanut -= bet; pushHist('Dadu Bet','Bet '+bet+' 🫘'); save();
+  // animate can: show rolling for 900ms
+  const canEl = document.getElementById('canDisplay');
+  let t=0;
+  const iv = setInterval(()=>{
+    canEl.innerText = Math.floor(Math.random()*6)+1;
+    t+=100;
+    if(t>=900){
+      clearInterval(iv);
+      const d1 = Math.floor(Math.random()*6)+1;
+      const d2 = Math.floor(Math.random()*6)+1;
+      const d3 = Math.floor(Math.random()*6)+1;
+      canEl.innerText = d1 + ',' + d2 + ',' + d3;
+      // check matches: position-wise
+      let correctPos = 0;
+      if(d1 === parts[0]) correctPos++;
+      if(d2 === parts[1]) correctPos++;
+      if(d3 === parts[2]) correctPos++;
+      let win = 0;
+      if(correctPos === 3){
+        win = bet * 100;
+      } else if(correctPos >= 1){
+        win = bet * 2;
+      } else {
+        win = 0;
+      }
+      // RTP adjust (small chance to nullify)
+      if(Math.random()*100 > (S.cfg.rtp || 85)) win = 0;
+      if(win>0){
+        S.peanut += win;
+        pushHist('Dadu Menang','Rolled '+d1+','+d2+','+d3+' → +'+win+' 🫘');
+        setMsg('diceMsg','🎉 Menang +'+win+' 🫘 ('+correctPos+' benar)');
+      } else {
+        pushHist('Dadu Kalah','Rolled '+d1+','+d2+','+d3);
+        setMsg('diceMsg','☹️ Kalah — Rolled '+d1+','+d2+','+d3);
+      }
+      save();
+    }
+  },100);
+}
+
+/* ---------- Admin panel ---------- */
+const ADMIN_USER = 'FAREL';
+const ADMIN_PASS = '55555';
+document.getElementById('adminLoginBtn').addEventListener('click',()=>{
+  const u = document.getElementById('adminUser').value.trim();
+  const p = document.getElementById('adminPass').value.trim();
+  if(u===ADMIN_USER && p===ADMIN_PASS){
+    document.getElementById('adminArea').style.display = 'block';
+    document.getElementById('cfgBalance').value = S.rp;
+    document.getElementById('cfgMinBet').value = S.cfg.minbet;
+    document.getElementById('cfgRTP').value = S.cfg.rtp;
+    document.getElementById('cfgZeusFS').value = S.cfg.zeusFreeSpins || 15;
+    alert('Admin login sukses');
+  } else alert('Login admin gagal');
+});
+document.getElementById('saveCfgBtn').addEventListener('click',()=>{
+  const rp = parseInt(document.getElementById('cfgBalance').value||S.rp,10);
+  const minb = parseInt(document.getElementById('cfgMinBet').value||S.cfg.minbet,10);
+  const rtp = parseInt(document.getElementById('cfgRTP').value||S.cfg.rtp,10);
+  const zfs = parseInt(document.getElementById('cfgZeusFS').value||S.cfg.zeusFreeSpins||15,10);
+  S.rp = isNaN(rp)? S.rp: rp;
+  S.cfg.minbet = isNaN(minb)? S.cfg.minbet: minb;
+  S.cfg.rtp = isNaN(rtp)? S.cfg.rtp: Math.max(0,Math.min(100,rtp));
+  S.cfg.zeusFreeSpins = isNaN(zfs)? S.cfg.zeusFreeSpins: zfs;
+  save();
+  alert('Pengaturan tersimpan');
+});
+document.getElementById('resetBtn').addEventListener('click',()=>{
+  if(confirm('Reset semua data ke default?')){
+    localStorage.removeItem(STORAGE_KEY);
+    S = JSON.parse(JSON.stringify(DEFAULT));
+    save();
+    renderBalances();
+    alert('Reset done');
+  }
+});
+
+/* ---------- Sidebar quick actions ---------- */
+function addPeanut(n){
+  S.peanut = (S.peanut||0) + n;
+  pushHist('TopUp Kacang','+ '+n+' 🫘 (Quick)');
+  save();
+}
+function exchangeToPeanut(){
+  // convert 1000 Rp -> 100 kacang
+  if(S.rp < 1000){ alert('Saldo Rp tidak cukup'); return; }
+  S.rp -= 1000; S.peanut += 100; pushHist('Exchange','1000 Rp → 100 🫘'); save();
+}
+
+/* ---------- helper setMsg ---------- */
+function setMsg(id,msg){
+  const el = document.getElementById(id);
+  if(el) el.innerText = msg;
+}
+
+/* ---------- Event wiring ---------- */
+document.getElementById('zeusSpinBtn').addEventListener('click', zeusSpin);
+document.getElementById('zeusBuyBtn').addEventListener('click', zeusBuyScatter);
+document.getElementById('mahjongSpinBtn').addEventListener('click', mahjongSpin);
+document.getElementById('crashStartBtn').addEventListener('click', startCrash);
+document.getElementById('crashCashoutBtn').addEventListener('click', crashCashout);
+document.getElementById('diceRollBtn').addEventListener('click', rollThreeDice);
+
+/* ---------- On first load defaults ---------- */
+if(!S.rp && S.rp !== 0){ S = JSON.parse(JSON.stringify(DEFAULT)); save(); }
+if(!S.cfg) S.cfg = JSON.parse(JSON.stringify(DEFAULT.cfg));
+renderBalances();
+renderHistory();
+
+/* ---------- Expose a few functions for console tinkering ---------- */
+window._S = S;
+window.saveState = save;
+window.showView = (v) => { qsa('.tabs button').forEach(b=>b.classList.remove('active')); const b = qsa(`[data-view="${v}"]`)[0]; if(b) b.classList.add('active'); qsa('.view').forEach(x=>x.classList.add('hidden')); const el = document.getElementById('view-'+v); if(el) el.classList.remove('hidden'); };
+window.addPeanut = addPeanut;
+window.exchangeToPeanut = exchangeToPeanut;
+
+</script>
+</body>
+</html>
+</style>
+
